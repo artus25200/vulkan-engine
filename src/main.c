@@ -1,13 +1,15 @@
-#include "vulkan/vulkan_core.h"
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef OSX
 #define GLFW_INCLUDE_VULKAN
+#else
+#include <vulkan/vulkan.h>
+#endif
 #include <GLFW/glfw3.h>
-
 #define WINDOW_WIDTH 1080
 #define WINDOW_HEIGHT 920
 
@@ -59,18 +61,20 @@ struct QueueFamilyIndices {
   uint32_t graphicsFamily;
 };
 
-struct QueueFamilyIndices findQueueFamily(){
-	QueueFamilyIndices indices;
-	uint32_t queueFamilyCount = 0;
-vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
-VkQueueFamilyProperties *queueFamilies = malloc(sizeof(VkQueueFamilyPropertie) * queueFamilyCount);
-vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, &queueFamilies);
-	for(int i = 0; i < queueFamilyCount; ++i){
-		if(queueFamilies[i].queueFlags & VK_QUEUE_GRAPHICS_BIT){
-		indices.graphicsFamily = i;
-		}
-	}
-	return indices;
+struct QueueFamilyIndices findQueueFamily(VkPhysicalDevice device) {
+  struct QueueFamilyIndices indices;
+  uint32_t queueFamilyCount = 0;
+  vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, NULL);
+  VkQueueFamilyProperties *queueFamilies =
+      malloc(sizeof(VkQueueFamilyProperties) * queueFamilyCount);
+  vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount,
+                                           queueFamilies);
+  for (int i = 0; i < queueFamilyCount; ++i) {
+    if (queueFamilies[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+      indices.graphicsFamily = i;
+    }
+  }
+  return indices;
 }
 
 int main(int argc, char **argv) {
@@ -102,7 +106,7 @@ int main(int argc, char **argv) {
 
   glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 
-  char **Extensions = malloc(sizeof(char *) * (glfwExtensionCount + 2));
+  char **Extensions = malloc(sizeof(char *) * (glfwExtensionCount));
 
   memcpy(Extensions, glfwExtensions, sizeof(char *) * glfwExtensionCount);
   instance_create_info.enabledExtensionCount = glfwExtensionCount;
