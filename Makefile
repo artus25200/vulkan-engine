@@ -1,7 +1,16 @@
 # tool macros
 CC ?= clang # FILL: the compiler
+LFLAGS := -L/opt/local/lib -lglfw
 CFLAGS := -g -c -Wall -ggdb -O0 -I/opt/local/include
-LFLAGS := -L/opt/local/lib -framework CoreVideo -framework IOKit -framework Cocoa -framework GLUT -lMoltenVK -lglfw -mmacosx-version-min=10.15
+UNAME_S := $(shell uname -s)
+    ifeq ($(UNAME_S),Linux)
+        CCFLAGS += -D LINUX 
+	LFLAGS += -lvulkan
+    endif
+    ifeq ($(UNAME_S),Darwin)
+        CCFLAGS += -D OSX 
+	LFLAGS += -framework CoreVideo -framework IOKit -framework Cocoa -framework GLUT -lMoltenVK  -mmacosx-version-min=10.15
+    endif
 COBJFLAGS := $(CFLAGS) -c
 
 # path macros
